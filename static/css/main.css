@@ -1,0 +1,111 @@
+body {
+    height: 100vh;
+    margin: 0;
+}
+
+#container {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr 8fr 1fr;
+    background-color: darkgray;
+}
+
+#main {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 2fr 6fr 2fr;
+}
+
+#study {
+    height: 100%;
+    overflow: auto;
+    display: grid;
+    grid-template-rows: 9fr 1fr;
+    word-break: break-all;
+    font-size: 21px;
+    border-radius: 10px;
+}
+
+#card {
+    height: 100%;
+    overflow: auto;
+    background-color: cadetblue;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    word-break: break-all;
+}
+
+#front {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    word-break: break-word;
+}
+
+.word-text {
+    margin-bottom: 3px;
+}
+
+#show-answer {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 8fr 1fr;
+    background-color: darkolivegreen;
+}
+
+#show-answer-btn-area {
+    display: flex;
+    justify-content: center;
+}
+
+#btn-show-answer {
+    font-size: 21px;
+}
+
+.difficulty-level-btn {
+    font-size: 21px;
+}
+
+.difficulty-level-interval {
+    margin-bottom: 3px;
+}
+
+#difficulty-levels {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* #right-side-bar {
+    background-color: darkslategrey;
+} */
+
+img,
+video {
+    max-width: 60%;
+    max-height: 500px;
+    height: auto;
+}
+
+#bg-modal {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+#modal-content {
+    width: 500px;
+    height: 300px;
+    background-color: white;
+    border-radius: 4px;
+}
+
+.new-word {
+    font-weight: bold;
+    color: blue;
+}

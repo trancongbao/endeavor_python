@@ -1,0 +1,121 @@
+{% extends 'endeavorapp/main.html' %}
+
+{% block content %}
+
+<body>
+  <div id="study">
+    <!-- TODO: previous card -->
+    <div id="card">
+      <div id="front"></div>
+      <div id="back"></div>
+    </div>
+
+    <div id="show-answer">
+      <div id="show-answer-left-padding"></div>
+      <div id='show-answer-btn-area'>
+        <button id="btn-show-answer" onclick="showAnswer();">Show Answer</button>
+
+        <div id="difficulty-levels">
+          <!-- TODO: use form with hidden input -->
+          <div>
+            <p class="difficulty-level-interval" id="difficulty-level-again">&lt 1 min</p>
+            <button class="difficulty-level-btn" onclick="onAgain(card);">Again</button>
+          </div>
+          <div>
+            <p class="difficulty-level-interval" id="difficulty-level-hard"></p>
+            <button class="difficulty-level-btn" onclick="onDifficultyLevelSelected(card, card.hard);">Hard</button>
+          </div>
+          <div>
+            <p class="difficulty-level-interval" id="difficulty-level-good"></p>
+            <button class="difficulty-level-btn" onclick="onDifficultyLevelSelected(card, card.good);">Good</button>
+          </div>
+          <div>
+            <p class="difficulty-level-interval" id="difficulty-level-easy"></p>
+            <button class="difficulty-level-btn" onclick="onDifficultyLevelSelected(card, card.easy);">Easy</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="show-answer-right-padding"></div>
+    </div>
+  </div>
+</body>
+
+{{ cards|json_script:"cards" }}
+<script>
+  var cards = JSON.parse(document.getElementById("cards").textContent);
+  var card
+  moveToNextCard();
+
+  function moveToNextCard() {
+    card = cards.shift()
+    if (card !== undefined) {
+      showFront(card)
+    } else {
+      showDonePage()
+    }
+
+    function showFront(_card) {
+      // TODO: custom audio player
+      let front = `<p>${_card.front_text}</p>`
+      if (_card.front_audio) {
+        front +=
+          `<audio controls controlslist="nodownload noplaybackrate" autoplay loop>
+            <source src="${_card.front_audio}" type="audio/mp3">
+          </audio>`
+      }
+      document.getElementById("front").innerHTML = front;
+      // document.getElementById("front_audio").volume = 0.10; //TODO: personalization, local storage
+      document.getElementById("back").innerHTML = "";
+      document.getElementById("btn-show-answer").style.display = "";
+      document.getElementById("difficulty-levels").style.display = "none";
+    }
+
+    function showDonePage() {
+      window.location.replace('/done');
+    }
+  }
+
+  function showAnswer() {
+    let back = card.words.map((word) => {
+      let word_html = `<p class="word-text">${word.text} :: ${word.definition}</p>`
+      if (word.image) {
+        word_html += `<img src="${word.image}">`
+      }
+      if (word.video) {
+        word_html +=
+          `<video controls controlsList="nodownload" autoplay loop muted>
+              <source src="${word.video}" type="video/mp4">
+          </video>`
+      }
+      return word_html;
+    }).join('')
+    document.getElementById("back").innerHTML = "<hr/>" + back;
+    document.getElementById("btn-show-answer").style.display = "none";
+    document.getElementById("difficulty-levels").style.display = "";
+    document.getElementById("difficulty-level-hard").innerText = card.hard + ' days';
+    document.getElementById("difficulty-level-good").innerText = card.good + ' days';
+    document.getElementById("difficulty-level-easy").innerText = card.easy + ' days';
+  }
+
+  function onAgain(_card) {
+    schedule(_card, 0)     //reset progress
+    moveToNextCard()
+  }
+
+  function onDifficultyLevelSelected(_card, _interval) {
+    schedule(_card, _interval)
+    moveToNextCard()
+  }
+
+  function schedule(_card, _interval) {
+    const path = `/cards/${_card.id}/schedule`
+    const query = `?interval=${_interval}`
+    const url = path + query
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => console.log(data))    //TODO: remove (no content)
+  }
+</script>
+
+{% endblock %}

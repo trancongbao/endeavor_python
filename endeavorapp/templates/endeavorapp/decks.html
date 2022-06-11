@@ -1,0 +1,11 @@
+{% extends 'endeavorapp/main.html' %}
+
+{% block content %}
+<!-- TODO: deck hierarchy -->
+<h1>Decks</h1>
+<div>
+    {% for deck in decks %}
+    <h2>{{deck.id}} -- <a href="/decks/{{deck.id}}/cards">{{deck.name}}</a></h2>
+    {% endfor %}
+</div>
+{% endblock %}

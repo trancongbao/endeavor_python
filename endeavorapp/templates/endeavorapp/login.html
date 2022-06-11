@@ -1,0 +1,10 @@
+{% extends 'endeavorapp/main.html' %}
+
+{% block content %}
+<h1>Login</h1>
+<form class="form-login" action="/login/" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Log in">
+</form>
+{% endblock %}

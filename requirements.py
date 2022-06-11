@@ -1,0 +1,15 @@
+ansicon==1.89.0
+arrow==1.2.2
+asgiref==3.5.2
+blessed==1.19.1
+Django==4.0.5
+django-picklefield==3.1
+django-q==1.3.9
+jinxed==1.2.0
+Pillow==9.2.0
+python-dateutil==2.8.2
+redis==3.5.3
+six==1.16.0
+sqlparse==0.4.2
+tzdata==2022.1
+wcwidth==0.2.5

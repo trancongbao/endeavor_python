@@ -1,0 +1,18 @@
+{% extends 'endeavorapp/main.html' %}
+
+{% block content %}
+<!-- TODO: return a fragment to replace card -->
+
+<body>
+    <h1>You've finished the deck for today. Congrats!</h1>
+    <button onclick="studyNextDeck();">Study Next Deck</button>
+    <button onclick="window.location.replace('/decks');">Back to Decks</button>
+</body>
+
+<script>
+    function studyNextDeck() {
+        //TODO: study next deck
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends 'endeavorapp/main.html' %}
+
+{% block content %}
+<!-- TODO: use tabs for different administration tasks -->
+<button onclick="showAssignDecksModal()">Assign Decks to User</button>
+<button onclick="showAddDeckModal()">Add Deck</button>
+<button onclick="showAddCardModal()">Add Card</button>
+
+<div id="add-deck-modal" style="display: none">
+    <p>Please enter the deck's name.</p>
+    <input id="add-deck-modal-input-name" name="name" type="text" placeholder="Name">
+    <button onclick="closeAddDeckModal()">Cancel</button>
+    <button onclick="createDeck()">Create</button>
+    <button onclick="createDeck(true)">Create and Start Adding Cards</button>
+    <p id="add-deck-validation-message"></p>
+</div>
+
+<div id="assign-decks-modal" style="display: none">
+    <div>
+        <label for="assign-decks-modal-select-user">Select a user:</label>
+        <select id="assign-decks-modal-select-user">
+            {% for user in users %}
+            <option value="{{ user.id }}">{{ user.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="assign-decks-modal-select-user">Select decks:</label>
+        <select id="assign-decks-modal-select-decks" multiple>
+            {% for deck in decks %}
+            <option value="{{ deck.id }}">{{ deck.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button onclick="closeAssignDecksModal()">Cancel</button>
+    <button onclick="assignDecksToUser()">Assign</button>
+</div>
+
+<div id="add-card-modal" style="display: none">
+    <div>
+        <label for="add-card-modal-select-deck">Deck:</label>
+        <select id="add-card-modal-select-deck">
+            {% for deck in decks %}
+            <option value="{{ deck.id }}">{{ deck.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="add-card-modal-front-text">Front:</label>
+        <!-- display:inline-block to force <br> instead of <div> for new line -->
+        <p id="add-card-modal-front-text" contenteditable
+            style="border: 1px solid black; width: 400px; height: 100px; display:inline-block;">
+        </p>
+        <button onclick="createNewWord(window.getSelection())">Create A New Word</button>
+        <!-- TODO: selectExistingWord() -->
+        <button onclick="selectExistingWord(window.getSelection())">Select An Existing Word</button>
+    </div>
+    <div>
+        <label for="add-card-modal-front-audio">Audio:</label>
+        <input id="add-card-modal-front-audio" type="file" accept="audio/mpeg3">
+    </div>
+    <div>
+        <button onclick="closeAddCardModal()">Exit</button>
+        <button onclick="addCard()">Create</button>
+    </div>
+</div>
+
+<div id="add-word-modal" style="display: none">
+    <div>
+        <label for="add-word-modal-text">Text:</label>
+        <input id="add-word-modal-text" name="text" type="text">
+        <label for="add-word-modal-part-of-speech">Part of speech:</label>
+        <input id="add-word-modal-part-of-speech" name="part-of-speech" type="text">
+        <label for="add-word-modal-phonetic">Phonetic:</label>
+        <input id="add-word-modal-phonetic" name="phonetic" type="text">
+        <label for="add-word-modal-definition">Definition:</label>
+        <input id="add-word-modal-definition" name="definition" type="text">
+    </div>
+    <div>
+        <label for="add-word-modal-image">Image:</label>
+        <input id="add-word-modal-image" type="image" accept="image/*">
+    </div>
+    <div>
+        <button onclick="closeAddWordModal()">Exit</button>
+        <button onclick="addWord()">Create</button>
+    </div>
+</div>
+
+
+<script>
+    let showAssignDecksModal = () => document.getElementById("assign-decks-modal").style.display = 'block';
+    let closeAssignDecksModal = () => document.getElementById("assign-decks-modal").style.display = 'none';
+    function assignDecksToUser() {
+        let selectedDecks = document.getElementById('assign-decks-modal-select-decks').selectedOptions
+        const options = {
+            method: 'POST',
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            body: JSON.stringify({
+                user_id: document.getElementById("assign-decks-modal-select-user").value,
+                deck_ids: Array.from(selectedDecks).map(deck => parseInt(deck.value))
+            })
+        };
+        fetch('/manage_decks_access/', options)
+            .then(response => {
+                if (response.status === 204) {
+                    closeAssignDecksModal()
+                }
+            });
+    }
+
+    let showAddDeckModal = () => document.getElementById("add-deck-modal").style.display = 'block';
+    let closeAddDeckModal = () => document.getElementById("add-deck-modal").style.display = 'none';
+    function createDeck(addCard) {
+        const path = 'create_deck/'
+        const options = {
+            method: 'POST',
+            headers: {
+                "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                name: document.getElementById("add-deck-modal-input-name").value
+            })
+        };
+
+        fetch(path, options)
+            .then(response => {
+                if (response.status === 201) {
+                    closeAddDeckModal()
+                    document.getElementById("add-deck-validation-message").textContent = ''
+                } else {
+                    response.text().then(message => {
+                        document.getElementById("add-deck-validation-message").textContent = message
+                    })
+                }
+            });
+
+        if (addCard) {
+            //TODO: add cards to the newly created deck
+            console.log('Add Card')
+        }
+    }
+
+    let showAddCardModal = () => document.getElementById("add-card-modal").style.display = 'block';
+    let closeAddCardModal = () => document.getElementById("add-card-modal").style.display = 'none';
+    function addCard() {
+        const formData = new FormData();
+        formData.append('deckId', document.getElementById("add-card-modal-select-deck").value)
+        formData.append('frontText', document.getElementById("add-card-modal-front-text").innerHTML)
+        formData.append('frontAudio', document.getElementById("add-card-modal-front-audio").files[0])
+        const options = {
+            method: 'POST',
+            headers: {
+                "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: formData
+        };
+
+        fetch('create_card/', options)
+            .then(response => {
+                if (response.status === 201) {
+                    document.getElementById("add-card-modal-front-text").innerHTML = ''
+                    document.getElementById("add-card-modal-front-audio").value = null
+                }
+            });
+    }
+
+    function createNewWord(selection) {
+        markAsNewWord(selection)
+        showAddWordModal(selection.toString())
+    }
+
+    function markAsNewWord(selection) {
+        if (!selection.isCollapsed) {
+            const wrapper = document.createElement('span');
+            wrapper.classList.add('new-word');
+            const range = selection.getRangeAt(0).cloneRange();
+            range.surroundContents(wrapper);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+
+    function showAddWordModal(word_text) {
+        document.getElementById("add-word-modal").style.display = 'block'
+        document.getElementById("add-word-modal-text").value = word_text
+    }
+    let closeAddWordModal = () => document.getElementById("add-word-modal").style.display = 'none';
+    function addWord() {
+        const formData = new FormData();
+        formData.append('text', document.getElementById("add-word-modal-text").value)
+        formData.append('partOfSpeech', document.getElementById("add-word-modal-part-of-speech").value)
+        formData.append('phonetic', document.getElementById("add-word-modal-phonetic").value)
+        formData.append('definition', document.getElementById("add-word-modal-definition").value)
+        // formData.append('image', document.getElementById("add-word-modal-image").value)
+        const options = {
+            method: 'POST',
+            headers: {
+                "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: formData
+        };
+
+        fetch('create_word/', options)
+            .then(response => {
+                if (response.status === 201) {
+                    document.getElementById("add-word-modal-text").innerHTML = ''
+                    document.getElementById("add-word-modal-part-of-speech").innerHTML = ''
+                    document.getElementById("add-word-modal-phonetic").innerHTML = ''
+                    document.getElementById("add-word-modal-definition").innerHTML = ''
+                    document.getElementById("add-word-modal-image").value = null
+                }
+            });
+    }
+</script>
+
+{% endblock %}
